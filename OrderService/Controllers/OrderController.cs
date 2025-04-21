@@ -1,6 +1,32 @@
-﻿namespace OrderService.Controllers
+﻿using Microsoft.AspNetCore.Mvc;
+using OrderService.Dto;
+using OrderService.Services;
+
+namespace OrderService.Controllers
 {
-    public class OrderController
+    [ApiController]
+    [Route("api/[controller]")]
+    public class OrderController : ControllerBase
     {
+        private readonly IOrderService _orderService;
+
+        public OrderController(IOrderService orderService)
+        {
+            _orderService = orderService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateOrder(CreateOrderDto dto)
+        {
+            var result = await _orderService.CreateOrderAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllOrders()
+        {
+            var orders = await _orderService.GetAllOrdersAsync();
+            return Ok(orders);
+        }
     }
 }
