@@ -47,21 +47,21 @@ namespace OrderService.Services
                 ProductName = order.ProductName,
                 Price = order.Price,
                 Quantity = order.Quantity,
-                CreatedAt = order.OrderedAt
+                CreatedAt = order.CreatedAt
             };
         }
 
         public async Task<List<OrderResponseDto>> GetAllOrdersAsync()
         {
             var orders = await _context.Orders.ToListAsync();
-            return orders.Select(o => new OrderResponseDto
+            return [.. orders.Select(o => new OrderResponseDto
             {
                 OrderId = o.OrderId,
                 ProductName = o.ProductName,
                 Price = o.Price,
                 Quantity = o.Quantity,
                 CreatedAt = o.CreatedAt
-            }).ToList();
+            })];
         }
     }
 }

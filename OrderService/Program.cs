@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore; // Add this using directive for 'UseSqlServer'
 using OrderService.Data;
 using OrderService.Services;
-using Microsoft.EntityFrameworkCore; // Ensure this using directive is present
-using Microsoft.EntityFrameworkCore.SqlServer; // Add this using directive if not already present
-using OrderService.Data;
-using OrderService.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +20,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 // Add HttpClient
 builder.Services.AddHttpClient("ProductService", c =>
 {
-    c.BaseAddress = new Uri("http://localhost:5024"); // Replace with ProductService actual base URL
+    c.BaseAddress = new Uri("https://localhost:7087"); // Replace with ProductService actual base URL
 });
 
 // Add Services
@@ -38,6 +35,7 @@ var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.MapControllers();
 
 app.UseAuthorization();
 app.Run();

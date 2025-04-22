@@ -13,6 +13,7 @@ namespace OrderService.Controllers
         public OrderController(IOrderService orderService)
         {
             _orderService = orderService;
+            Console.WriteLine("🚀 OrderController loaded");
         }
 
         [HttpPost]

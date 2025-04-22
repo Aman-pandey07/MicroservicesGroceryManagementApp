@@ -6,6 +6,6 @@
         public string ProductName { get; set; }
         public double Price { get; set; }
         public int Quantity { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } 
     }
 }
