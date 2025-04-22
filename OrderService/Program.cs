@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore; // Add this using directive for 'UseSqlServer'
 using OrderService.Data;
+using OrderService.RabbitMQ.Services;
 using OrderService.Services;
 
 
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Ensure 'Microsoft.EntityFrameworkCore.SqlServer' package is installed
 
 
+builder.Services.AddScoped<IRabbitMQProducer, RabbitMQProducer>();
 // Ensure the NuGet package 'Microsoft.EntityFrameworkCore.SqlServer' is installed in your project.
 // You can install it using the following command in the Package Manager Console:
 // Install-Package Microsoft.EntityFrameworkCore.SqlServer

@@ -2,6 +2,8 @@
 using OrderService.Data;
 using OrderService.Dto;
 using OrderService.Models;
+using OrderService.RabbitMQ.Publisher;
+using OrderService.RabbitMQ.Services;
 using System.Text.Json;
 
 namespace OrderService.Services
@@ -10,11 +12,13 @@ namespace OrderService.Services
     {
         private readonly OrderDbContext _context;
         private readonly HttpClient _httpClient;
+        private readonly IRabbitMQProducer _rabbitMQProducer;
 
-        public OrderService(OrderDbContext context, IHttpClientFactory httpClientFactory)
+        public OrderService(OrderDbContext context, IHttpClientFactory httpClientFactory, IRabbitMQProducer rabbitMQProducer)
         {
             _context = context;
             _httpClient = httpClientFactory.CreateClient("ProductService");
+            _rabbitMQProducer = rabbitMQProducer;
         }
 
         public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderDto dto)
@@ -40,6 +44,17 @@ namespace OrderService.Services
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+
+            var orderEvent = new OrderCreatedEvent
+            {
+                OrderId = order.OrderId.GetHashCode(),
+                ProductName = order.ProductName,
+                Quantity = order.Quantity,
+                Price = order.Price,
+                CreatedAt = order.CreatedAt
+            };
+
+            await _rabbitMQProducer.SendOrderCreatedMessageAsync(orderEvent);
 
             return new OrderResponseDto
             {

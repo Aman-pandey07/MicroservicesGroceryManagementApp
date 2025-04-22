@@ -1,3 +1,8 @@
+﻿using NotificationService.RabbitMQConsumer;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,35 +12,45 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
 app.UseHttpsRedirection();
 
-var summaries = new[]
+// 🐇 RABBITMQ CONSUMER CODE
+var factory = new ConnectionFactory()
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    HostName = "localhost", // RabbitMQ server
+    Port = 5672 // Default port
 };
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// Fix: Await the connection task to get the IConnection instance
+var connection = await factory.CreateConnectionAsync();
+using var channel = await connection.CreateChannelAsync();
 
+// Fix: Declare the consumer before attaching the event handler
+var consumer = new AsyncEventingBasicConsumer(channel);
+
+// Fix for CS0841: Attach the event handler after the consumer is declared
+consumer.ReceivedAsync += static async (model, ea) =>
+{
+    var body = ea.Body.ToArray();
+    var message = Encoding.UTF8.GetString(body);
+    Console.WriteLine($"📩 [NotificationService] Received: {message}");
+    await Task.CompletedTask; // Explicitly return a completed Task to satisfy the delegate's return type.
+};
+
+await channel.QueueDeclareAsync(
+    queue: "orderQueue",
+    durable: false,
+    exclusive: false,
+    autoDelete: false,
+    arguments: null
+);
+
+// 🔁 Set up consumer to listen
+channel.BasicConsumeAsync(
+    queue: "orderQueue",
+    autoAck: true,
+    consumer: consumer
+);
+
+// ✅ Start web app
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
