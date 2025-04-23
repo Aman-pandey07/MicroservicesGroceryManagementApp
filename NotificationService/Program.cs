@@ -39,14 +39,14 @@ consumer.ReceivedAsync += static async (model, ea) =>
 
 await channel.QueueDeclareAsync(
     queue: "orderQueue",
-    durable: false,
+    durable: true,
     exclusive: false,
     autoDelete: false,
     arguments: null
 );
 
 // 🔁 Set up consumer to listen
-channel.BasicConsumeAsync(
+await channel.BasicConsumeAsync(
     queue: "orderQueue",
     autoAck: true,
     consumer: consumer
