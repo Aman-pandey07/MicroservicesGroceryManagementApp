@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProductService.Dto;
 using ProductService.Models;
 using ProductService.Services;
@@ -15,6 +16,7 @@ namespace ProductService.Controllers
             _productService = productService;
         }
 
+        [Authorize(Roles = "Admin,Manager,SuperAdmin")]
         [HttpPost]
         public async Task<ActionResult> CreateProduct([FromBody] CreateProductDto dto)
         {
@@ -22,7 +24,7 @@ namespace ProductService.Controllers
             return Ok(createproduct);
         }
 
-
+        [Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
@@ -30,6 +32,7 @@ namespace ProductService.Controllers
             return Ok(products);
         }
 
+        [Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductById(Guid id)
         {
@@ -40,6 +43,7 @@ namespace ProductService.Controllers
             return Ok(product);
         }
 
+        [Authorize(Roles = "Admin,Manager,SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct([FromBody] ProductDisplayDto dto, Guid id)
         {
@@ -50,6 +54,7 @@ namespace ProductService.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin,Manager,SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(Guid id)
         {

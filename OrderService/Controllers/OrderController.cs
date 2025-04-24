@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OrderService.Dto;
 using OrderService.Services;
 
@@ -15,7 +16,7 @@ namespace OrderService.Controllers
             _orderService = orderService;
             Console.WriteLine("🚀 OrderController loaded");
         }
-
+        [Authorize(Roles = "Admin,Manager,Customer,User")]
         [HttpPost]
         public async Task<IActionResult> CreateOrder(CreateOrderDto dto)
         {
@@ -23,6 +24,7 @@ namespace OrderService.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Admin,Manager,SuperAdmin")]
         [HttpGet]
         public async Task<IActionResult> GetAllOrders()
         {
