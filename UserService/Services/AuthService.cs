@@ -51,7 +51,7 @@ namespace UserService.Services
                 Email = dto.Email.ToLower(),
                 PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
                 PasswordSalt = hmac.Key,
-                Role = "User"
+                Role = dto.Role
             };
 
             _context.Add(user);

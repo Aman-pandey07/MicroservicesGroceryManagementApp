@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using OrderService.Data;
 using OrderService.RabbitMQ.Services;
 using OrderService.Services;
+using System.Security.Claims;
 using System.Text;
 
 
@@ -23,7 +24,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
              ValidAudience = builder.Configuration["Jwt:Audience"],
              IssuerSigningKey = new SymmetricSecurityKey(
                  Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-             )
+             ),
+             RoleClaimType = ClaimTypes.Role
          };
      });
 
@@ -46,7 +48,7 @@ builder.Services.AddScoped<IRabbitMQProducer, RabbitMQProducer>();
 // Add HttpClient
 builder.Services.AddHttpClient("ProductService", c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7087"); // Replace with ProductService actual base URL
+    c.BaseAddress = new Uri("https://localhost:7087/api/Product/"); // Replace with ProductService actual base URL
 });
 
 // Add Services
@@ -55,6 +57,8 @@ builder.Services.AddScoped<IOrderService, OrderService.Services.OrderService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
+
 
 var app = builder.Build();
 

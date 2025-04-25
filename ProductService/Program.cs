@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProductService.Data;
 using ProductService.Services;
+using System.Security.Claims;
 using System.Text; // Ensure this namespace contains the correct ProductService class
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +23,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-            )
+            ),
+            RoleClaimType = ClaimTypes.Role
         };
     });
 

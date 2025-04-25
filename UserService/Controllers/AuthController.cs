@@ -17,7 +17,8 @@ namespace UserService.Controllers
             _authService = authService;
         }
 
-        [Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]
+        //[Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserregistrationDto dto)
         {
@@ -28,7 +29,8 @@ namespace UserService.Controllers
             return Ok(user);
         }
 
-        [Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]
+        //[Authorize(Roles = "User")]
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto dto)
         {
@@ -37,5 +39,7 @@ namespace UserService.Controllers
 
             return Ok(user);
         }
+
+        
     }
 }

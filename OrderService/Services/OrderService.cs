@@ -4,6 +4,8 @@ using OrderService.Dto;
 using OrderService.Models;
 using OrderService.RabbitMQ.Publisher;
 using OrderService.RabbitMQ.Services;
+using System.Net.Http.Headers;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace OrderService.Services
@@ -11,22 +13,43 @@ namespace OrderService.Services
     public class OrderService : IOrderService
     {
         private readonly OrderDbContext _context;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory; // Fixed type
         private readonly IRabbitMQProducer _rabbitMQProducer;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public OrderService(OrderDbContext context, IHttpClientFactory httpClientFactory, IRabbitMQProducer rabbitMQProducer)
+        public OrderService(OrderDbContext context,
+            IHttpClientFactory httpClientFactory,
+            IRabbitMQProducer rabbitMQProducer,
+            IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
-            _httpClient = httpClientFactory.CreateClient("ProductService");
+            _httpClientFactory = httpClientFactory; // Fixed assignment
             _rabbitMQProducer = rabbitMQProducer;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<OrderResponseDto> CreateOrderAsync(CreateOrderDto dto)
         {
-            // Call ProductService to get product info
-            var response = await _httpClient.GetAsync($"/api/Product/{dto.ProductId}");
+            // Step 1: Get the token from the current HTTP request
+            var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+
+            // Step 2: Create client
+            var client = _httpClientFactory.CreateClient("ProductService"); // Fixed method call
+
+            // Step 3: Set Bearer token if available
+            if (!string.IsNullOrEmpty(token))
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token.Replace("Bearer ", ""));
+            }
+
+            // Step 4: Make the request to ProductService
+            var response = await client.GetAsync($"/api/Product/{dto.ProductId}"); // Fixed usage of client
             if (!response.IsSuccessStatusCode)
-                throw new Exception("Product not found.");
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Product not found or error: {errorContent}");
+            }
 
             var content = await response.Content.ReadAsStringAsync();
             var product = JsonSerializer.Deserialize<ProductResponseDto>(content, new JsonSerializerOptions
@@ -69,14 +92,14 @@ namespace OrderService.Services
         public async Task<List<OrderResponseDto>> GetAllOrdersAsync()
         {
             var orders = await _context.Orders.ToListAsync();
-            return [.. orders.Select(o => new OrderResponseDto
+            return orders.Select(o => new OrderResponseDto
             {
                 OrderId = o.OrderId,
                 ProductName = o.ProductName,
                 Price = o.Price,
                 Quantity = o.Quantity,
                 CreatedAt = o.CreatedAt
-            })];
+            }).ToList();
         }
     }
 }

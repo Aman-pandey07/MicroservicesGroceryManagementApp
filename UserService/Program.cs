@@ -4,7 +4,8 @@ using UserService.Services;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text; // Add this using directive for AddSwaggerGen
+using System.Text;
+using System.Security.Claims; // Add this using directive for AddSwaggerGen
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +37,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-            )
+            ),
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
