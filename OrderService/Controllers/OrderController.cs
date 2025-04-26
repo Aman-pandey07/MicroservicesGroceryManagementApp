@@ -5,6 +5,7 @@ using OrderService.Services;
 
 namespace OrderService.Controllers
 {
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
@@ -24,7 +25,8 @@ namespace OrderService.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin,Manager,SuperAdmin")]
+        //[Authorize(Roles = "Admin,Manager,SuperAdmin")]
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllOrders()
         {

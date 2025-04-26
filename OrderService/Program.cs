@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore; // Add this using directive for 'UseSqlServer'
 using Microsoft.IdentityModel.Tokens;
 using OrderService.Data;
@@ -61,6 +61,24 @@ builder.Services.AddHttpContextAccessor();
 
 
 var app = builder.Build();
+
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity != null && context.User.Identity.IsAuthenticated)
+    {
+        Console.WriteLine("🧾 Authenticated User:");
+        foreach (var claim in context.User.Claims)
+        {
+            Console.WriteLine($"👉 {claim.Type} = {claim.Value}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("❌ User NOT authenticated");
+    }
+
+    await next();
+});
 
 
 app.UseSwagger();

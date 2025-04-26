@@ -1,4 +1,4 @@
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 
@@ -14,25 +14,6 @@ builder.Services.AddOpenApi();
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-            ),
-            RoleClaimType = ClaimTypes.Role
-        };
-    });
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -44,10 +25,17 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 
-app.UseAuthentication();
-app.UseAuthorization();
+
 
 app.MapReverseProxy();
 app.MapControllers();
+
+////this is temp log 
+//app.Use(async (context, next) =>
+//{
+//    Console.WriteLine("➡️ Incoming Request: " + context.Request.Path);
+//    Console.WriteLine("🔐 Authorization Header: " + context.Request.Headers["Authorization"]);
+//    await next();
+//});
 
 app.Run();
