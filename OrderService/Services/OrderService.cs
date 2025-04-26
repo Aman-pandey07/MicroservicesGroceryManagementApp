@@ -44,7 +44,7 @@ namespace OrderService.Services
             }
 
             // Step 4: Make the request to ProductService
-            var response = await client.GetAsync($"/api/Product/{dto.ProductId}"); // Fixed usage of client
+            var response = await client.GetAsync($"/api/Product/InterService/{dto.ProductId}"); // Fixed usage of client
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();

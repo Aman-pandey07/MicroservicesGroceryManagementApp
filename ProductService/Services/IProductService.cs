@@ -7,8 +7,11 @@ namespace ProductService.Services
     {
         Task<ProductDisplayDto> CreateProduct(CreateProductDto prod);
         Task<ProductDisplayDto> GetProductById(Guid id);
+        Task<ProductDisplayDtoInterService> GetProductByIdInterService(Guid id);
+        Task<ProductDisplayDtoAdmin> GetProductByIdAdmin(Guid id);
         Task<List<ProductDisplayDto>> GetAllProducts();
-        Task<bool> UpdateProduct(ProductDisplayDto dto, Guid id);
+        Task<List<ProductDisplayDtoAdmin>> GetAllProductsAdmin();
+        Task<UpdatedProductDisplayDto> UpdateProduct(ProductDisplayDto dto, Guid id);
         Task<bool> DeleteProduct(Guid id);
     }
 }

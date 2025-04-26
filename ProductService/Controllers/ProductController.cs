@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductService.Dto;
 using ProductService.Models;
 using ProductService.Services;
+using ProductService.Dto;
 
 namespace ProductService.Controllers
 {
@@ -32,6 +33,30 @@ namespace ProductService.Controllers
             return Ok(products);
         }
 
+        //this is only and only for inter service call from the order service 
+        [Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]
+        [HttpGet("InterService/{id}")]
+        public async Task<IActionResult> GetProductByIdInterService(Guid id)
+        {
+            var product = await _productService.GetProductByIdInterService(id);
+            if (product == null)
+                return NotFound("Product not found");
+
+            return Ok(product);
+        }
+
+
+        //this is the admin version
+        [Authorize(Roles = "Admin,Manager,SuperAdmin")]
+        [HttpGet("Admin")]
+        public async Task<IActionResult> GetAllProductsAdmin()
+        {
+            var products = await _productService.GetAllProductsAdmin();
+            return Ok(products);
+        }
+
+
+        //this is user version
         [Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductById(Guid id)
@@ -43,15 +68,36 @@ namespace ProductService.Controllers
             return Ok(product);
         }
 
+
+        //this is Admin Version
+        [Authorize(Roles = "Admin,Manager,SuperAdmin")]
+        [HttpGet("Admin/{id}")]
+        public async Task<IActionResult> GetProductByIdAdmin(Guid id)
+        {
+            var product = await _productService.GetProductByIdAdmin(id);
+            if (product == null)
+                return NotFound("Product not found");
+
+            return Ok(product);
+        }
+
         [Authorize(Roles = "Admin,Manager,SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct([FromBody] ProductDisplayDto dto, Guid id)
         {
-            var updated = await _productService.UpdateProduct(dto, id);
-            if (!updated)
-                return NotFound("Product not found to update");
+            var updateResult = await _productService.UpdateProduct(dto, id);
 
-            return NoContent();
+            if (updateResult == null)
+                return NotFound($"Product with ID {id} not found.");
+
+            if (!updateResult.UpdatedFields.Any())
+                return Ok($"Product with ID {id} was already up-to-date.");
+
+            return Ok(new
+            {
+                Message = $"✅ Product with ID {id} updated successfully.",
+                UpdatedFields = updateResult.UpdatedFields
+            });
         }
 
         [Authorize(Roles = "Admin,Manager,SuperAdmin")]

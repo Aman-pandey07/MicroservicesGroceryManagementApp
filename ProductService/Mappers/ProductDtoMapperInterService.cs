@@ -3,17 +3,18 @@ using ProductService.Models;
 
 namespace ProductService.Mappers
 {
-    public static class ProductDtoMapper
+    public class ProductDtoMapperInterService
     {
-        public static ProductDisplayDto ProductDisplayMapperDto(Product prod)
+        public static ProductDisplayDtoInterService ProductDisplayMapperDtoInterService(Product prod)
         {
-            return new ProductDisplayDto
+            return new ProductDisplayDtoInterService
             {
+                ProductId = prod.ProductId,
                 Name = prod.Name,
                 Category = prod.Category,
                 Description = prod.Description,
                 Price = prod.Price,
-                //Quantity = prod.Quantity
+                Quantity = prod.Quantity
             };
         }
     }

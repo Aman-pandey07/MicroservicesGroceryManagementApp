@@ -3,17 +3,19 @@ using ProductService.Models;
 
 namespace ProductService.Mappers
 {
-    public static class ProductDtoMapper
+    public class ProductDtoMapperAdmin
     {
-        public static ProductDisplayDto ProductDisplayMapperDto(Product prod)
+        public static ProductDisplayDtoAdmin ProductDisplayMapperDtoAdmin(Product prod)
         {
-            return new ProductDisplayDto
+            return new ProductDisplayDtoAdmin
             {
+                ProductId = prod.ProductId,
                 Name = prod.Name,
                 Category = prod.Category,
                 Description = prod.Description,
                 Price = prod.Price,
-                //Quantity = prod.Quantity
+                Quantity = prod.Quantity,
+                CreatedAt = prod.CreatedAt
             };
         }
     }

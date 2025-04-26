@@ -33,12 +33,23 @@ namespace ProductService.Services
             throw new NotImplementedException();
         }
 
+        //Get All product service of the **User Version**
         public async Task<List<ProductDisplayDto>> GetAllProducts()
         {
             var products = await _context.Products.ToListAsync();
             return products.Select(p => ProductDtoMapper.ProductDisplayMapperDto(p)).ToList();
         }
 
+
+        //Get All product service of the **Admin Version**
+        public async Task<List<ProductDisplayDtoAdmin>> GetAllProductsAdmin()
+        {
+            var products = await _context.Products.ToListAsync();
+            return products.Select(p => ProductDtoMapperAdmin.ProductDisplayMapperDtoAdmin(p)).ToList();
+        }
+
+
+        //this is the user version
         public async Task<ProductDisplayDto> GetProductById(Guid id)
         {
             var product = await _context.Products.FindAsync(id);
@@ -47,19 +58,71 @@ namespace ProductService.Services
             return ProductDtoMapper.ProductDisplayMapperDto(product);
         }
 
-        public async Task<bool> UpdateProduct(ProductDisplayDto dto, Guid id)
+        //this is the Admin version
+        public async Task<ProductDisplayDtoAdmin> GetProductByIdAdmin(Guid id)
         {
             var product = await _context.Products.FindAsync(id);
-            if (product == null) return false;
+            if (product == null) return null;
 
-            product.Name = dto.Name;
-            product.Category = dto.Category;
-            product.Description = dto.Description;
-            product.Price = dto.Price;
-            product.Quantity = dto.Quantity;
+            return ProductDtoMapperAdmin.ProductDisplayMapperDtoAdmin(product);
+        }
 
-            await _context.SaveChangesAsync();
-            return true;
+        //this is only for the inter service communication for the order service which wanted the product id 
+        public async Task<ProductDisplayDtoInterService> GetProductByIdInterService(Guid id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return null;
+
+            return ProductDtoMapperInterService.ProductDisplayMapperDtoInterService(product);
+        }
+
+
+        //Updated the UpdateProduct response
+        public async Task<UpdatedProductDisplayDto> UpdateProduct(ProductDisplayDto dto, Guid id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return null;
+
+            var result = new UpdatedProductDisplayDto
+            {
+                ProductId = id
+            };
+            if (product.Name != dto.Name)
+            {
+                product.Name = dto.Name;
+                result.UpdatedFields["Name"] = dto.Name;
+            }
+
+            if (product.Category != dto.Category)
+            {
+                product.Category = dto.Category;
+                result.UpdatedFields["Category"] = dto.Category;
+            }
+
+            if (product.Description != dto.Description)
+            {
+                product.Description = dto.Description;
+                result.UpdatedFields["Description"] = dto.Description;
+            }
+
+            if (product.Price != dto.Price)
+            {
+                product.Price = dto.Price;
+                result.UpdatedFields["Price"] = dto.Price;
+            }
+
+            if (product.Quantity != dto.Quantity)
+            {
+                product.Quantity = dto.Quantity;
+                result.UpdatedFields["Quantity"] = dto.Quantity;
+            }
+
+            if (result.UpdatedFields.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            return result;
         }
     }
 }
