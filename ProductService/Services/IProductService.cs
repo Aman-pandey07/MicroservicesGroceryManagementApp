@@ -13,5 +13,7 @@ namespace ProductService.Services
         Task<List<ProductDisplayDtoAdmin>> GetAllProductsAdmin();
         Task<UpdatedProductDisplayDto> UpdateProduct(ProductDisplayDto dto, Guid id);
         Task<bool> DeleteProduct(Guid id);
+
+        Task<(bool IsAvailable, int AvailableQuantity, string Message)> CheckAndUpdateStockAsync(Guid productId, int requestedQuantity);
     }
 }

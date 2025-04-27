@@ -13,5 +13,7 @@ namespace OrderService.Models
 
         // Add the missing CreatedAt property to fix the error  
         public DateTime CreatedAt => OrderedAt;
+
+        public int UserId { get; set; }
     }
 }

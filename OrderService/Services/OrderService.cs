@@ -51,6 +51,24 @@ namespace OrderService.Services
                 throw new Exception($"Product not found or error: {errorContent}");
             }
 
+            // Step 4.1: Check & Deduct Stock First
+            var stockResponse = await client.GetAsync($"/api/Product/CheckStock?productId={dto.ProductId}&requestedQuantity={dto.Quantity}");
+            var stockContent = await stockResponse.Content.ReadAsStringAsync();
+
+            var stockResult = JsonSerializer.Deserialize<StockCheckResponse>(stockContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (stockResult == null || !stockResult.IsAvailable)
+            {
+                return new OrderResponseDto
+                {
+                    ErrorMessage = stockResult?.Message ?? "Insufficient stock available."
+                };
+            }
+
+
             var content = await response.Content.ReadAsStringAsync();
             var product = JsonSerializer.Deserialize<ProductResponseDto>(content, new JsonSerializerOptions
             {
@@ -62,7 +80,8 @@ namespace OrderService.Services
                 ProductId = product.ProductId,
                 ProductName = product.Name,
                 Quantity = dto.Quantity,
-                Price = product.Price * dto.Quantity
+                Price = product.Price * dto.Quantity,
+                UserId = GetUserIdFromToken()
             };
 
             _context.Orders.Add(order);
@@ -74,7 +93,8 @@ namespace OrderService.Services
                 ProductName = order.ProductName,
                 Quantity = order.Quantity,
                 Price = order.Price,
-                CreatedAt = order.CreatedAt
+                CreatedAt = order.CreatedAt,
+                
             };
 
             await _rabbitMQProducer.SendOrderCreatedMessageAsync(orderEvent);
@@ -100,6 +120,35 @@ namespace OrderService.Services
                 Quantity = o.Quantity,
                 CreatedAt = o.CreatedAt
             }).ToList();
+        }
+
+        //this is the api response of the GetAllOrder for a user
+        public async Task<List<OrderResponseDto>> GetAllOrdersUserAsync()
+        {
+            var userId = GetUserIdFromToken();
+            // Fix: Use '==' for comparison instead of '='
+            var orders = await _context.Orders.Where(o => o.UserId == userId).ToListAsync();
+            return orders.Select(o => new OrderResponseDto
+            {
+                OrderId = o.OrderId,
+                ProductName = o.ProductName,
+                Price = o.Price,
+                Quantity = o.Quantity,
+                CreatedAt = o.CreatedAt
+            }).ToList();
+        }
+
+
+
+
+        private int GetUserIdFromToken()
+        {
+            var claim = _httpContextAccessor.HttpContext?.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+
+            if (claim == null)
+                throw new Exception("User ID not found in token");
+
+            return int.Parse(claim.Value);
         }
     }
 }

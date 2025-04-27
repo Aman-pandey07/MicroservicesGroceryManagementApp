@@ -124,5 +124,22 @@ namespace ProductService.Services
 
             return result;
         }
+
+
+        public async Task<(bool IsAvailable, int AvailableQuantity, string Message)> CheckAndUpdateStockAsync(Guid productId, int requestedQuantity)
+        {
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
+
+            if (product == null)
+                return (false, 0, "Product not found");
+
+            if (product.Quantity < requestedQuantity)
+                return (false, product.Quantity, $"Only {product.Quantity} items in stock");
+
+            product.Quantity -= requestedQuantity;
+            await _context.SaveChangesAsync();
+
+            return (true, product.Quantity, "Stock is available");
+        }
     }
 }

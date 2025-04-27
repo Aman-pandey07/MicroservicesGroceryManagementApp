@@ -4,6 +4,7 @@ using ProductService.Dto;
 using ProductService.Models;
 using ProductService.Services;
 using ProductService.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProductService.Controllers
 {
@@ -110,5 +111,26 @@ namespace ProductService.Controllers
 
             return NoContent();
         }
+
+
+
+        //this is endpoint for internal communication
+        [HttpGet("CheckStock")]
+        public async Task<IActionResult> CheckStock([FromQuery] Guid productId, [FromQuery] int requestedQuantity)
+        {
+            var (isAvailable, availableQuantity, message) =
+            await _productService.CheckAndUpdateStockAsync(productId, requestedQuantity);
+
+            if (!isAvailable && message == "Product not found")
+                return NotFound(new { isAvailable, message });
+
+            return Ok(new
+            {
+                isAvailable,
+                availableQuantity,
+                message
+            });
+        }
+
     }
 }

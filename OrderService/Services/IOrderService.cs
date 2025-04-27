@@ -6,5 +6,6 @@ namespace OrderService.Services
     {
         Task<OrderResponseDto> CreateOrderAsync(CreateOrderDto dto);
         Task<List<OrderResponseDto>> GetAllOrdersAsync();
+        Task<List<OrderResponseDto>> GetAllOrdersUserAsync();
     }
 }
