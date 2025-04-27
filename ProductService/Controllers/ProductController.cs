@@ -132,5 +132,22 @@ namespace ProductService.Controllers
             });
         }
 
+
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProducts([FromQuery] string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                return BadRequest("Search keyword cannot be empty.");
+
+            var products = await _productService.SearchProductsAsync(keyword);
+            if (products.Count == 0)
+                return NotFound("No products found matching your search criteria.");
+
+            return Ok(products);
+        }
+
+
+
     }
 }

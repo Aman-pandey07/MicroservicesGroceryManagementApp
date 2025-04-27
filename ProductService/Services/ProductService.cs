@@ -141,5 +141,34 @@ namespace ProductService.Services
 
             return (true, product.Quantity, "Stock is available");
         }
+
+        public async Task<List<ProductDisplayDto>>  SearchProductsAsync(string keyword)
+        {
+            
+            if (string.IsNullOrWhiteSpace(keyword))
+                return new List<ProductDisplayDto>();
+
+            // Convert the search keyword to lower case to perform a case-insensitive search
+            var lowerKeyword = keyword.ToLower();
+
+            // Query products based on category, name, or description containing the keyword
+            var products = await _context.Products
+                .Where(p => p.Name.ToLower().Contains(lowerKeyword) ||
+                            p.Category.ToLower().Contains(lowerKeyword) ||
+                            p.Description.ToLower().Contains(lowerKeyword))
+                .Select(p => new ProductDisplayDto
+                {
+                    Name = p.Name,
+                    Category = p.Category,
+                    Description = p.Description,
+                    Price = p.Price,
+                    Quantity = p.Quantity
+                })
+                .ToListAsync();
+
+            return products;
+        }
+
+
     }
 }

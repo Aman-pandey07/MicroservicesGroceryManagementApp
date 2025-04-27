@@ -15,5 +15,8 @@ namespace ProductService.Services
         Task<bool> DeleteProduct(Guid id);
 
         Task<(bool IsAvailable, int AvailableQuantity, string Message)> CheckAndUpdateStockAsync(Guid productId, int requestedQuantity);
+
+        Task<List<ProductDisplayDto>> SearchProductsAsync(string keyword);
+
     }
 }
