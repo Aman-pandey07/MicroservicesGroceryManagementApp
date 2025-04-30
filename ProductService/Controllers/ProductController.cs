@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using ProductService.Dto;
 using ProductService.Models;
 using ProductService.Services;
-using ProductService.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace ProductService.Controllers
@@ -22,8 +21,27 @@ namespace ProductService.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateProduct([FromBody] CreateProductDto dto)
         {
-            var createproduct = await _productService.CreateProduct(dto);
-            return Ok(createproduct);
+            //Improved response of the outputd
+            try
+            {
+                var createdProduct = await _productService.CreateProduct(dto);
+
+                var response = new
+                {
+                    Message = "Product added successfully.",
+                    Product = createdProduct
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Message = "Failed to add product.",
+                    Error = ex.Message
+                });
+            }
         }
 
         [Authorize(Roles = "Admin,Manager,SuperAdmin,User,Customer")]

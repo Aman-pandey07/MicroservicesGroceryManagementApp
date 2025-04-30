@@ -142,6 +142,7 @@ namespace ProductService.Services
             return (true, product.Quantity, "Stock is available");
         }
 
+        //This is the search product service
         public async Task<List<ProductDisplayDto>>  SearchProductsAsync(string keyword)
         {
             
